@@ -1,0 +1,73 @@
+<!-- A Versatile Layout for Full-screen Maps by Andy Cochran -->
+<!-- From https://medium.com/nyc-planning-digital/a-versatile-layout-for-full-screen-maps-229cec508b22 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Hello World</title>
+    <!-- JavaScript Libraries-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/js/foundation.js"></script>
+    <!-- CSS Links -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css" rel="stylesheet" />
+    <link href="VersitileLayout.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="site-header">
+        <strong class="site-title">Capitol Attractions</strong>
+    </div>
+    <div class="site-main grid-x has-content-open">
+        <div class="search-container cell medium-3 large-2">
+            <input type="text" placeholder="Search..." class="search" />
+            <ul class="search-results no-bullet">
+                <li>Search Result 1</li>
+                <li>Search Result 2</li>
+                <li>Search Result 3</li>
+            </ul>
+        </div>
+        <div class="map-container cell medium-auto large-order-2">
+            <!--  ADD iframe here, inside the Versatile Layout's map container   -->
+            <iframe src="filter-markers.html" title="Map"></iframe> 
+        </div>
+        <!--  Sidebar panel  -->
+        <div class="sidebar cell medium-3 large-2 large-order-1 show-for-medium">
+            <h5>Sidebar</h5>
+            <ul>
+                <li><a class="content-link" href="#">What Am I Looking At?</a></li>
+                <li>Explore the theater, music, bar, and biking attractions in Washington, D.C.</li>
+            </ul>
+            <hr />
+        </div>
+        <div class="content-close-button-container">
+            <a href="#" class="content-close-button">×</a>
+        </div>
+        <!--  Content panel  -->
+        <div class="content cell large-5 large-order-3">
+            <h2>What Am I Looking At?</h2>
+            <p>Welcome to Capitol Attractions, your guide to Washington D.C.'s vibrant entertainment scene! This map showcases the city's diverse cultural offerings, helping both visitors and locals enjoy the best of the nation's capital.</p>
+            <p>The map prominently features two theaters, represented by classic theater icons. These venues host a range of captivating performances, promising an unforgettable theatrical experience for all attendees.</p>
+            <p>For music lovers, Capitol Attractions spotlights three dynamic music venues. Each is marked by a distinctive music icon, so whether you're into jazz, rock, or classical music, you'll find the ideal place to immerse yourself in D.C.'s lively music scene.</p>
+            <p>After a night of entertainment, consider unwinding at one of the city's inviting bars. Capitol Attractions includes a recommendation for a standout bar.</p>
+            <p>For those who enjoy exploring the city by bike, Capitol Attractions also highlights a scenic bike path, represented by the bike icon.</p>
+            <p>Go forth and explore!</p>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content-close-button').click(function() {
+                $('.content-close-button').hide();
+                $('.content').hide();
+                $('.site-main').removeClass('has-content-open')
+                // When the map is resized programmatically, window resize must be triggered so that the map renders in the newly allotted space.
+                window.dispatchEvent(new Event('resize'));
+            });
+            $('.content-link').click(function() {
+                $('.content-close-button').show();
+                $('.content').show();
+                $('.site-main').addClass('has-content-open')
+                window.dispatchEvent(new Event('resize'));
+            });
+        });
+    </script>
+</body>
+</html>
