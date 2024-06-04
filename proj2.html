@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Watersheds Map</title>
+    <!-- JavaScript Libraries-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/js/foundation.js"></script>
+    <!-- CSS Links -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css" rel="stylesheet" />
+    <link href="VersitileLayout.css" rel="stylesheet" />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .site-header {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .site-title {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id='map'></div>
+    <div class="site-header">
+        <strong class="site-title">Lane County Watersheds</strong>
+    </div>
+    
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoibmNsZWxhbmQiLCJhIjoiY2x1bGhscTZoMDQycjJpbzJodWI3emtrZiJ9.IzKil2XhH8__h4_MkSZ4iw';
+
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/ncleland/clwgooah800al01rbafskbwe7', 
+            center: [-123.0867, 44.0521], // Center on Lane County
+            zoom: 9,
+            maxBounds: [
+                [-124.5, 42.0], // Southwest coordinates
+                [-121.5, 45.0]  // Northeast coordinates
+            ]
+        });
+
+        // Mapping of watershed IDs to custom descriptions
+        const descriptions = {
+            'Alsea': 'This is a custom description for Alsea.',
+            'Siltcoos': 'This is a custom description for Siltcoos.',
+            'Umpqua': 'This is a custom description for Umpqua.',
+            'Siuslaw': 'This is a custom description for Siuslaw.',
+            'Coast Fork Willamette': 'This is a custom description for Coast Fork Willamette.',
+            'Upper Willamette': 'This is a custom description for Upper Willamette.',
+            'North Umpqua': 'This is a custom description for North Umpqua.',
+            'Middle Fork Willamette': 'This is a custom description for Middle Fork Willamette.',
+            'Mckenzie': 'This is a custom description for Mckenzie.'
+        };
+        
+        map.on('load', () => {
+
+
+            const popup = new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: false
+            });
+
+            map.on('click', 'watersheds-layer', (e) => {
+                // Get the coordinates and properties of the clicked feature
+                const coordinates = e.lngLat;
+                const properties = e.features[0].properties;
+                console.log( e.features[0].properties)
+
+                // Access the custom description using the unique identifier
+                const description = descriptions[properties.Name] ;
+                console.log(properties.Name)
+                
+                // Customize the popup content based on the properties
+                const content = `
+                    <strong>Watershed:</strong> ${properties.Name}<br>
+                    <strong>Area:</strong> ${properties.AreaAcres} acres<br>
+                    <strong>Description:</strong> ${description}
+                `;
+
+                // Set the popup content
+                popup.setLngLat(coordinates)
+                    .setHTML(content)
+                    .addTo(map);
+            });
+
+
+            // Change the cursor to a pointer when over the watersheds layer
+            map.on('mouseenter', 'watersheds-layer', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            // Change the cursor back to default when not over the watersheds layer
+            map.on('mouseleave', 'watersheds-layer', () => {
+                map.getCanvas().style.cursor = '';
+            });
+        });
+    </script>
+</body>
+</html>
