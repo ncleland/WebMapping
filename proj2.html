@@ -4,14 +4,33 @@
     <meta charset='utf-8' />
     <title>Watersheds Map</title>
     <!-- JavaScript Libraries-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/js/foundation.js"></script>
-    <!-- CSS Links -->
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css" rel="stylesheet" />
-    <link href="VersitileLayout.css" rel="stylesheet" />
     <meta name='viewport' content='width=device-width, initial-scale=1' />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css' rel='stylesheet' />
+        <!--    The Mapbox JavaScript here in the <head> of the page    -->
+      <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js'></script>
+    <!--    The Mapbox CSS here in the <head> of the page    -->
+      <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css' rel='stylesheet' />
+      
+      <!--   Link to Google font-->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Yatra+One&display=swap" rel="stylesheet">
+      
+    <style>
+        /* CSS code between the <style> tags */
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        
+        /* Overrides the pop-up width slightly bigger min-width than the default Mapbox CSS*/
+         .mapboxgl-popup {
+            min-width: 325px;
+             /*add the css for the popup font here */
+                font-family: "Playfair Display", system-ui;
+           } 
     <style>
         body { margin: 0; padding: 0; }
         #map { position: absolute; top: 0; bottom: 0; width: 100%; }
@@ -26,6 +45,38 @@
         .site-title {
             font-size: 24px;
         }
+        .descriptionPanel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            width: calc(100% - 20px);
+            max-width: 600px;
+            overflow-y: auto;
+            transition: height 0.3s;
+        }
+        .legend {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1;
+        }
+        .legend label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        /* Style for "chevron" */
+        .chevron {
+            position: relative;
+            margin-left: 45%;
+            font-size: x-large;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -33,76 +84,144 @@
     <div class="site-header">
         <strong class="site-title">Lane County Watersheds</strong>
     </div>
-    
+
+    <!-- Map description panel -->
+    <div class="descriptionPanel" id="descriptionPanel" style="height: 500px;">
+        <span onClick="panelSelect()" id="glyph" class="chevron glyphicon glyphicon-chevron-down"></span>
+        <hr/>
+        <h4>WHAT AM I LOOKING AT?</h4>
+        <p style="margin-left: 10px; margin-right: 10px;">
+            Explore the diverse and vital watersheds of Lane County with our interactive map. This tool highlights the intricate network of rivers and streams that sustain our local ecosystems, communities, and wildlife. As you navigate the map, you will discover detailed information about each watershed, including their unique characteristics and ecological significance.
+        </p>
+        <p style="margin-left: 10px; margin-right: 10px;">
+            This map is part of our commitment to protecting Lane County's natural resources, reflecting our belief in the fundamental need to live in harmony with the natural world. Clean, unpolluted water is essential for all life, and this map is a step towards ensuring the health and sustainability of our watersheds for future generations.
+        </p>
+        <p style="margin-left: 10px; margin-right: 10px;">
+            Learn more about our mission and efforts to secure the Rights of Waters and Watersheds through sustainable practices and legal protections. Together, we can safeguard these precious resources from exploitation and pollution, prioritizing the well-being of our environment over corporate interests.
+        </p>
+    </div>
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoibmNsZWxhbmQiLCJhIjoiY2x1bGhscTZoMDQycjJpbzJodWI3emtrZiJ9.IzKil2XhH8__h4_MkSZ4iw';
 
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/ncleland/clwgooah800al01rbafskbwe7', 
-            center: [-123.0867, 44.0521], // Center on Lane County
-            zoom: 9,
+            style: 'mapbox://styles/ncleland/clwgooah800al01rbafskbwe7',
+            center: [-123.0867, 43.9], // Center on Lane County
+            zoom: 8,
             maxBounds: [
-                [-124.5, 42.0], // Southwest coordinates
+                [-124.5, 43.0], // Southwest coordinates
                 [-121.5, 45.0]  // Northeast coordinates
             ]
         });
 
         // Mapping of watershed IDs to custom descriptions
         const descriptions = {
-            'Alsea': 'This is a custom description for Alsea.',
-            'Siltcoos': 'This is a custom description for Siltcoos.',
-            'Umpqua': 'This is a custom description for Umpqua.',
-            'Siuslaw': 'This is a custom description for Siuslaw.',
-            'Coast Fork Willamette': 'This is a custom description for Coast Fork Willamette.',
-            'Upper Willamette': 'This is a custom description for Upper Willamette.',
-            'North Umpqua': 'This is a custom description for North Umpqua.',
-            'Middle Fork Willamette': 'This is a custom description for Middle Fork Willamette.',
-            'Mckenzie': 'This is a custom description for Mckenzie.'
+            'Alsea': `The Alsea watershed is known for its lush forests and diverse wildlife. Major water bodies include the <strong>Alsea River</strong>, <strong>Five Rivers</strong>, and <strong>Drift Creek</strong>. It is home to many species of fish, including salmon and steelhead, which are vital to the local ecosystem and economy.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/31246066@N04/51601572275/in/photolist-2mBRxEB-2m4VcgW-6TTwbD-6TXAwh-6TXyqC-6TTDr6-6TTwyV-6TTD4X-6TXCvS-6yNsj9-5jzwzE-6TXwdC-wWEGio-pRtDuS-4D3ctR-TcDmQC-6TTFnZ-quYiDH-6TXFAW-6TXyLS-cBfMof-dQe6Ei-2oRm9AZ-2nKADBs-4ExGnA-JdYhX5-25gKVnd-JdYiuh-wWEtsf-MNA1ye-2ibh5nN-wWMG2D-hxReFG-x2wW6m-8jYfwF-YPn9G2-XyqvUw-Ydbqrq-Ywt9gU-YPndBB-YwtaBE-YPnc6k-Xxkic5-Ydbs3b-88fSyY-7KToZh-7KToWs-7KPqmr-7KToTL-7KPqkX" title="Alsea Falls"><img src="https://live.staticflickr.com/65535/51601572275_41532f66d1_6k.jpg" width="6144" height="4096" alt="Alsea Falls"/></a>`,
+            
+            'Siltcoos': `The Siltcoos watershed features a mix of coastal dunes, wetlands, and lakes. Key water bodies include <strong>Siltcoos Lake</strong>, <strong>Siltcoos River</strong>, and <strong>Woahink Lake</strong>. It is a popular area for outdoor recreation, including fishing, boating, and birdwatching.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/infinitewilderness/268136504/in/photolist-pGgDb-2mZCzCt-7rjfbu-etBxqo-7rjdm9-E7kRrq-219Srby-219SrGo-5pPrNn-np6B6e-o8GNQs-E7kRZE-8pyHUv-etycFc-9cXHax-9d1NKE-ZTKiPK-nseXUo-pc1PYd-219SshS-2dTDZ8c-2dTDVHM-24EZnn2-2ebDrYf-24EZAVe-2fcS9kh-24EZvjK-2ebDzsJ-24EZb7M-2ptA3kK-24EZe6n-RwbMR4-5m3Gm3-RwcbnM-2ptCa82-2ptvpcW-q7cnnA-4NYLnR-5BRtwA-nJJvq4-bcj8-2ebDxjA-pRUDyy-2jzoffQ-5kYrb6-2ptCa4z-2ptA3gr-2ptvoCE-2ptA2xs-2ptBDE8" title="Siltcoos River"><img src="https://live.staticflickr.com/120/268136504_7111993d47_b.jpg" width="1024" height="430" alt="Siltcoos River"/></a>`,
+            
+            'Umpqua': `The Umpqua watershed is characterized by its scenic rivers and rich biodiversity. Significant water bodies include the <strong>Umpqua River</strong>, <strong>North Umpqua River</strong>, and <strong>South Umpqua River</strong>. It supports a variety of plant and animal species and is an important area for timber production and agriculture.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/outsidebend/7005296300/in/photolist-bF2YwG-37Cg6-2gQhtnP-pzP1U1-2R9Z5G-2GZuui-2jPn51X-2kcCFVZ-JqjHrX-3Zc4NE-2jsidUv-dqVxNK-2jJBrqa-2hoDCAL-9RC2qM-2nJNat4-ogjke1-2oj8JEq-aftYKX-2g9i2oC-2mLRYvH-2ctLvs7-61U1LG-5vNfF1-562hsm-5vNfFs-v8oF5-GcXXvZ-8zxFrg-2gdX5D4-dhXuFc-2mdFekm-azq1of-5vNfF7-czVEwG-pwigU-8zxNTF-28YB7Zs-ShqLow-5vNfFm-5vNfEW-5vNfFb-5VcuJJ-69nrsR-5WotSj-2cjQkY6-69nr3R-5wnyYM-22Ng7x-69rzBQ" title="umpqua"><img src="https://live.staticflickr.com/7217/7005296300_05425ae510_h.jpg" width="1504" height="1000" alt="umpqua"/></a>`,
+            
+            'Siuslaw': `The Siuslaw watershed is notable for its extensive estuarine and wetland habitats. Important water bodies include the <strong>Siuslaw River</strong>, <strong>Lake Creek</strong>, and <strong>Maple Creek</strong>. It plays a critical role in supporting fish populations and provides important ecosystem services such as water filtration and flood control.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/janedoughnut/4943400726/in/photolist-8wQdP1-nmPgd-neTxsX-2mMfbP2-2k4xTNb-256LoFx-2k4HL3p-2k4EFxL-2nfT9Hz-7oe4v-7ogQz-7oeyY-6s3R92-2nfT9WR-i5Bu48-2gGQYD7-2hJgm1k-722aZQ-2gGQ7JN-7ogqc-7ogvZ-2hJfPZd-7oeci-2kKgnou-LjnSAh-LHv5D4-aChbpw-21efagE-2nfTob8-26HDGQ5-2m8YJ4Q-2nYgrR3-KGcsQC-L1FUVF-219XFsF-224qcQs-2gFstFN-i5Cmx5-GyiZao-8FANHn-23SGTTQ-GtGGyb-Lyb4s9-2hrJxb4-aCeNQg-8yBTQ9-2HSocg-26stMEz-WPrzHY-6hKhW8" title="Siuslaw"><img src="https://live.staticflickr.com/4139/4943400726_0218a8afb9_b.jpg" width="1024" height="819" alt="Siuslaw"/></a>`,
+            
+            'Coast Fork Willamette': `The Coast Fork Willamette watershed encompasses a diverse landscape of forests, rivers, and agricultural lands. Notable water bodies include the <strong>Coast Fork Willamette River</strong>, <strong>Cottage Grove Reservoir</strong>, and <strong>Row River</strong>. It is an important water source for local communities and supports a variety of recreational activities.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/portlandcorps/16142051035/in/photolist-2mvcbWN-2mJKYPo-2mvb21f-7hGpTW-M7Mfwn-caKTK1-2mJKYYg-N5rhp6-2mvcbZD-qAqeoK-6ctCmT-qLr45g-2j7SvZc-2mveEeL-2hQXojq-2mveEef-2mvfG8E-2nVGXD4-2mwURhe-246CvrN-2mwTQ9i-2mwURbT-7qUAFH-7qUATZ-8EAHfS-2mwL2kA-2mwQ5SM-2hQXo4v-2hQYkgL-2mveEfh-TCZqUs-nw8n77-cZiENd-2nQ5zAv-2nWg2oJ-TCZADN-Tv9fQV-TsHhiN-T7C5i3-T7Afwy-zvLiVh-ZgPu1U-21jgUH5-Sq7kkb-Sq7pxE-T7Bmjd-TGDptB-QPJ2zN-nL8Nay-nLbfMZ" title="Cottage Grove sailing"><img src="https://live.staticflickr.com/7561/16142051035_d3e84b732b_k.jpg" width="2048" height="1536" alt="Cottage Grove sailing"/></a>`,
+            
+            'Upper Willamette': `The Upper Willamette watershed is a key area for both urban and rural communities. Major water bodies include the <strong>Willamette River</strong>, <strong>McKenzie River</strong>, and the <strong>Long Tom River</strong>. It includes major cities like Eugene and is crucial for water supply, recreation, and supporting wildlife habitats.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/discoveroregon/14090284989/in/photolist-nt7oQ6-2o1fQb5-2n4TP6N-2o1c2dg-2oafm7n-2nZnwSQ-2kEMWmN-2hWs3d6-2hThenN-2hGnbRG-2kNPXJB-2kHqENZ-2hRYmjx-2hzCcdf-2iD9vmd-2kJ9eiu-w92qxj-2mKp7Qk-2kGj1kD-2drPHgs-2hYELn6-2hK9FQb-PehQzT-vZ8wLn-2m5Hqvw-2hC49Au-vRVsgd-2m7pUMA-5GGN1K-2hvLEwG-w1TRU8-24LdEfz-6NgaxL-2m5VRmP-2m5Pemo-2ekx3oi-wNn6u8-9p34SG-2mzNDXn-w922KL-vFgFdJ-v2ewEY-vHXSED-vFK7LT-vWyowp-vHN1G1-vRuFFu-N9aui4-vRUNBA-vYuopM" title="Kirk Park by Fern Ridge Dam"><img src="https://live.staticflickr.com/3781/14090284989_81a1b2c141_3k.jpg" width="3072" height="1731" alt="Kirk Park by Fern Ridge Dam"/></a>`,
+            
+            'North Umpqua': `The North Umpqua watershed is renowned for its pristine waters and scenic beauty. Key water bodies include the <strong>North Umpqua River</strong>, <strong>Steamboat Creek</strong>, and <strong>Toketee Lake</strong>. It is a popular destination for fishing, kayaking, and hiking, and supports a rich array of wildlife.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/wild_rivers/25607412778/in/photolist-26KUSgh-2pHtGiC-U6jbbm-2mqFN2v-2mr8sp6-F1QFES-239pVB6-2d3Zv8D-DsPp84-2aNWLwf-2guU6Hp-2hr5WwT-29eBxjZ-2hYwcVZ-qhbiY7-aUymF8-rBUnvX-2pHtJan-2pGVhUb-2kRFhFj-riAPAZ-SgXXu7-rizJdX-gTfYid-4Niggj-qbyXyY-R5pguQ-SDBstE-T35P42-SEvjH6-RX2Zvb-Sn7U72-SNcxi9-2jDNHZ1-qEUWaU-rBVfxg-RBRaQz-RX3157-rzCQ1W-RX2Zp9-rkmkE5-rkkeEm-rBNFHr-XF8gwC-4QaNte-pw9gN7-T35Vzi-SgZ8Vq-riA6k6-rkkDVC" title="North Umpqua River, Oregon"><img src="https://live.staticflickr.com/4680/25607412778_84cf0ed4f2_k.jpg" width="2048" height="1365" alt="North Umpqua River, Oregon"/></a>`,
+            
+            'Middle Fork Willamette': `The Middle Fork Willamette watershed features a diverse mix of forested landscapes and riverine environments. Significant water bodies include the <strong>Middle Fork Willamette River</strong>, <strong>Dexter Reservoir</strong>, and <strong>Lookout Point Lake</strong>. It is important for both ecological health and human activities such as agriculture and recreation.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/icetsarina/50687528156/in/photolist-2ke5Qcf-2o5A6Kv-2htaNda-2mg4AdW-2n7foxT-ZXcSPE-2mKYxhu-9HuaPs-2paPQfB-8DqdTh-2kigcFZ-Ab3FUX-2byq2hu-2jzgT4L-2n6z2is-2mKWsbf-dKACYA-2jrXCDR-7xy3Wn-2mKCy6V-2mfaS7J-2mf74ik-2oBmAGt-2hY97oR-2jzNYyv-2mfeChe-282rt7J-2p2skWb-2pz6M7q-8CMKG1-a2YkBg-k7NBiv-2n5XkAo-BLTCYx-MSTm9t-iMYycF-pP7zF4-okhoDz-rZPbhV-2pz7wX2-yJj1b-2kusvHy-27x5c7o-2cJ1za5-dmYame-we2Jg1-vyCEDG-wvDJtV-25LqGdH-2ph6T5E" title="Lowell Covered Bridge, Oregon"><img src="https://live.staticflickr.com/65535/50687528156_d6a8980b13_k.jpg" width="2048" height="1365" alt="Lowell Covered Bridge, Oregon"/></a>`,
+            
+            'Mckenzie': `The McKenzie watershed is famous for its clear, cold waters and abundant fish populations. Notable water bodies include the <strong>McKenzie River</strong>, <strong>Blue River Reservoir</strong>, and <strong>Cougar Reservoir</strong>. It is a critical water source for the city of Eugene and offers numerous recreational opportunities, including fishing, boating, and hiking.
+            <br><a data-flickr-embed="true" href="https://www.flickr.com/photos/specb/14672006485/in/photolist-omvSn4-GWg5Kb-aeCEBg-aga33N-aCTDz9-zcPnFw-29LjDxC-SqxoXC-S7hpsW-TJpTXw-rsfD7-98w4BT-avvG6p-2aGsBfx-TbpPKJ-Sm44yn-S7hbhs-28gytPL-LcYEcE-24H4mFn-ZoAsyh-TbefaK-B26X2N-xonizo-nbTue9-wrgzne-2bBPLWC-2aLYn84-2V32BL-21SWTEJ-yyHsFk-SznvsQ-LcYFwJ-28kQ1UX-JFU6wp-26Yg2GH-otCLBE-28gypiS-ZoAqRE-YUKfkn-gXyTWX-Znc6XJ-JFU6Se-CkkoPq-26Yg1qe-BkX8nH-92rqiF-diaz1h-podgA3-fQC99b" title="McKenzie River"><img src="https://live.staticflickr.com/3911/14672006485_9fd93fd5ae_k.jpg" width="2048" height="1367" alt="McKenzie River"/></a>`
         };
-        
+
+
+        // Mapping of watershed IDs to unique colors
+        const watershedColors = {
+            'Alsea': 'rgba(255, 0, 0, 0.5)',        // Red with 50% transparency
+            'Siltcoos': 'rgba(0, 255, 0, 0.5)',     // Green with 50% transparency
+            'Umpqua': 'rgba(0, 0, 255, 0.5)',       // Blue with 50% transparency
+            'Siuslaw': 'rgba(255, 255, 0, 0.5)',    // Yellow with 50% transparency
+            'Coast Fork Willamette': 'rgba(255, 0, 255, 0.5)', // Magenta with 50% transparency
+            'Upper Willamette': 'rgba(0, 255, 255, 0.5)', // Cyan with 50% transparency
+            'North Umpqua': 'rgba(128, 0, 128, 0.5)', // Purple with 50% transparency
+            'Middle Fork Willamette': 'rgba(128, 128, 0, 0.5)', // Olive with 50% transparency
+            'Mckenzie': 'rgba(0, 128, 128, 0.5)'    // Teal with 50% transparency
+        };
+
         map.on('load', () => {
-
-
             const popup = new mapboxgl.Popup({
                 closeButton: true,
                 closeOnClick: false
             });
 
+            // Initially set the layer to be transparent
+            map.setPaintProperty('watersheds-layer-copy', 'fill-color', 'rgba(0,0,0,0)');
+
             map.on('click', 'watersheds-layer', (e) => {
                 // Get the coordinates and properties of the clicked feature
                 const coordinates = e.lngLat;
                 const properties = e.features[0].properties;
-                console.log( e.features[0].properties)
+                console.log(e.features[0].properties);
 
                 // Access the custom description using the unique identifier
-                const description = descriptions[properties.Name] ;
-                console.log(properties.Name)
-                
-                // Customize the popup content based on the properties
-                const content = `
-                    <strong>Watershed:</strong> ${properties.Name}<br>
-                    <strong>Area:</strong> ${properties.AreaAcres} acres<br>
-                    <strong>Description:</strong> ${description}
-                `;
+                const description = descriptions[properties.Name];
+                console.log(properties.Name);
 
-                // Set the popup content
+            // Customize the popup content based on the properties
+            const content = `
+                <div style="font-size: 18px; font-weight: bold;">${properties.Name}</div>
+                <strong>Area:</strong> ${properties.AreaAcres} acres<br>
+                <strong>Description:</strong> ${description}
+            `;
+
+                // Display the popup
                 popup.setLngLat(coordinates)
                     .setHTML(content)
                     .addTo(map);
+
+                // Highlight the clicked feature with its unique color
+                map.setPaintProperty('watersheds-layer-copy', 'fill-color', [
+                    'case',
+                    ['==', ['get', 'Name'], properties.Name],
+                    watershedColors[properties.Name], // Color for the clicked feature
+                    'rgba(0,0,0,0)' // Transparent for all other features
+                ]);
             });
 
-
-            // Change the cursor to a pointer when over the watersheds layer
             map.on('mouseenter', 'watersheds-layer', () => {
                 map.getCanvas().style.cursor = 'pointer';
             });
 
-            // Change the cursor back to default when not over the watersheds layer
             map.on('mouseleave', 'watersheds-layer', () => {
                 map.getCanvas().style.cursor = '';
             });
         });
+
+        // State for panel open/close
+        var state = { panelOpen: true };
+
+        // Function to toggle panel height
+        function panelSelect() {
+            if (state.panelOpen) {
+                document.getElementById('descriptionPanel').style.height = '50px';
+                document.getElementById('glyph').className = "chevron glyphicon glyphicon-chevron-up";
+                state.panelOpen = false;
+            } else {
+                document.getElementById('descriptionPanel').style.height = '500px';
+                document.getElementById('glyph').className = "chevron glyphicon-chevron-down";
+                state.panelOpen = true;
+            }
+        }
     </script>
 </body>
 </html>
